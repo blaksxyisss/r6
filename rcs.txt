@@ -1,0 +1,97 @@
+local activateKey = "capslock"
+
+local operatorStrengths = {
+    ["ash"]     = { 41, -2, false },
+    ["deimos"]  = { 18, -1, false },
+    ["hibana"]  = { 32, -2, false },
+    ["valk"]    = { 15,  0, false },  
+    ["twitch"]  = { 20, -1, false },  
+    ["nokk"]    = { 14,  0, true  },  
+    ["bandit"]  = { 13,  0, false },
+    ["fuze"]    = { 39, -2, false },
+    ["smoke"]   = { 23, -1, false },
+    ["mute"]    = { 23, -1, false },
+    ["rook"]    = { 11, -1, false },
+    ["doc"]     = { 15,  1, false },
+    ["kapkan"]  = { 13, -1, false },
+    ["goyo"]    = { 20,  0, false },
+    ["jackal"]  = { 15,  0, false },
+    ["ela"]     = { 20,  4, false },
+    ["striker"] = { 17, -1, false },
+    ["jager"]   = { 17, -1, false },
+    ["noor"]    = { 14, -1, false },
+    ["mira"]    = { 21, -1, false },
+    ["lesion"]  = { 19,  0, false }
+}
+
+-- Ordered list for cycling through operators
+local operatorList = {
+    "twitch", "ash", "hibana", "deimos", "jager", "bandit", 
+    "smoke", "nokk", "valk", "fuze", "mute", "rook", 
+    "doc", "kapkan", "goyo", "jackal", "ela", "striker", 
+    "noor", "mira", "lesion"
+}
+
+local currentIndex = 1 -- Starts at "twitch"
+local activeOperator = operatorList[currentIndex]
+
+EnablePrimaryMouseButtonEvents(true)
+
+function OnEvent(event, arg)
+    if event == "PROFILE_ACTIVATED" then
+        EnablePrimaryMouseButtonEvents(true)
+        OutputLogMessage("\n========================================\n")
+        OutputLogMessage("  [R6] SCRIPT LOADED | ACTIVE: %s\n", string.upper(activeOperator))
+        OutputLogMessage("========================================\n\n")
+        return
+    end
+
+    -- Cycle forward through operators using Mouse Button 4 (Back)
+    if event == "MOUSE_BUTTON_PRESSED" and arg == 4 then
+        currentIndex = currentIndex + 1
+        if currentIndex > #operatorList then 
+            currentIndex = 1 
+        end
+        activeOperator = operatorList[currentIndex]
+        
+        OutputLogMessage("\n----------------------------------------\n")
+        OutputLogMessage("  >>> ACTIVE OPERATOR: %s <<<\n", string.upper(activeOperator))
+        OutputLogMessage("----------------------------------------\n")
+        return
+    end
+
+    if not IsKeyLockOn(activateKey) then return end
+
+    -- Firing loop triggered by pressing Left Click while holding Right Click
+    if event == "MOUSE_BUTTON_PRESSED" and arg == 1 then
+        if IsMouseButtonPressed(3) then
+            local lookupKey = string.lower(activeOperator)
+            local settings = operatorStrengths[lookupKey] or { 15, 0, false }
+            local vForce = settings[1]
+            local hForce = settings[2]
+            local isSemi = settings[3]
+
+            if isSemi then
+                while IsMouseButtonPressed(1) and IsMouseButtonPressed(3) and IsKeyLockOn(activateKey) do
+                    PressMouseButton(1)
+                    Sleep(20 + math.random(0, 5))
+                    ReleaseMouseButton(1)
+                    
+                    local rV = vForce + math.random(-1, 1)
+                    local rH = hForce + math.random(-1, 1)
+                    MoveMouseRelative(rH, rV)
+                    
+                    Sleep(115 + math.random(-5, 5))
+                end
+            else
+                while IsMouseButtonPressed(1) and IsMouseButtonPressed(3) and IsKeyLockOn(activateKey) do
+                    local rV = vForce + math.random(-1, 1)
+                    local rH = hForce + math.random(-1, 1)
+                    
+                    MoveMouseRelative(rH, rV)
+                    Sleep(9 + math.random(-2, 2))
+                end
+            end
+        end
+    end
+end
